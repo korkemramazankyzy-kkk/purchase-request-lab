@@ -3,7 +3,7 @@ package com.example.purchase;
 import java.util.Objects;
 
 /**
- * Идентификатор заявки на покупку (аналог TicketId из стартового проекта).
+ * Идентификатор заявки на покупку.
  * Не может быть null или пустой/бланковой строкой.
  */
 public record PurchaseRequestId(String value) {
