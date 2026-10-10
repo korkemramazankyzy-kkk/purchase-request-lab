@@ -1,23 +1,68 @@
-# Product
 
-Мы строим систему учёта заявок на покупку. Люди отслеживают заявку на покупку (purchase request) от создания до получения товара.
+# Purchase Request Management
 
-# Core item
+A Java 21 and Spring Boot application for managing purchase request status transitions.
 
-**PurchaseRequest** — заявка на покупку. Содержит идентификатор (`PurchaseRequestId`) и статус (`PurchaseRequestStatus`).
+## Business purpose
 
-Статусы: `DRAFT`, `APPROVED`, `ORDERED`, `RECEIVED`.
+The application validates status transitions for purchase requests and prevents ordering before a request is approved.
 
-# Status table
+## Status transition table
 
-| From     | To       | Allowed | Причина (если запрещено)                              |
-|----------|----------|---------|--------------------------------------------------------|
-| DRAFT    | APPROVED | да      | —                                                        |
-| APPROVED | ORDERED  | да      | —                                                        |
-| DRAFT    | ORDERED  | нет     | нельзя заказывать товар без согласования (пропущен approval) |
-| RECEIVED | DRAFT    | нет     | нельзя вернуть заявку в черновик после получения товара |
+| From | To | Allowed |
+|---|---|---|
+| DRAFT | APPROVED | Yes |
+| APPROVED | ORDERED | Yes |
+| DRAFT | ORDERED | No |
+| RECEIVED | DRAFT | No |
 
-# Forbidden — why
+The policy also allows the transition ORDERED -> RECEIVED.
 
-- **DRAFT → ORDERED**: заказ у поставщика не может размещаться без согласования — это позволило бы обходить контроль бюджета.
-- **RECEIVED → DRAFT**: после получения товара заявка закрыта фактически; откат в черновик стёр бы историю поставки и сломал бы учёт остатков.
+## Package architecture
+
+```text
+com.example.purchase
+├── config
+│   ├── Application
+│   └── PurchaseRequestService
+├── domain
+│   ├── PurchaseRequestId
+│   ├── PurchaseRequestStatus
+│   ├── PurchaseRequestPolicy
+│   ├── Rule
+│   ├── RuleChain
+│   ├── TransitionRule
+│   └── UnapprovedCannotOrderRule
+├── dto
+├── client
+└── handler
+```
+
+Dependencies point inward toward the domain.
+
+- `config` starts Spring Boot and wires the rules.
+- `PurchaseRequestService` uses the injected `Rule`.
+- `domain` contains plain Java business logic and does not import Spring.
+- `dto` is reserved for data transfer objects.
+- `client` is reserved for outbound integrations.
+- `handler` is reserved for request handling.
+
+## Verification
+
+Run the tests and verify the project:
+
+```bash
+./mvnw -q verify
+```
+
+On Windows PowerShell:
+
+```powershell
+.\mvnw.cmd -q verify
+```
+
+Start the application:
+
+```powershell
+.\mvnw.cmd spring-boot:run
+```
