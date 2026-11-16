@@ -1,0 +1,33 @@
+package com.example.purchase.domain;
+
+import java.util.UUID;
+
+public class PurchaseRequest {
+    private final UUID id;
+    private final String businessKey;
+    private final String status;
+    private final String title;
+
+    public PurchaseRequest(UUID id, String businessKey, String status, String title) {
+        this.id = id;
+        this.businessKey = businessKey;
+        this.status = status;
+        this.title = title;
+    }
+
+    public UUID getId() {
+        return id;
+    }
+
+    public String getBusinessKey() {
+        return businessKey;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+}

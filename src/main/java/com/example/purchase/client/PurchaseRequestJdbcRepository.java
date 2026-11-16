@@ -1,9 +1,12 @@
 package com.example.purchase.client;
 
+import com.example.purchase.domain.PurchaseRequest;
 import com.example.purchase.domain.PurchaseRequestStatus;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -15,11 +18,12 @@ public class PurchaseRequestJdbcRepository {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public void insert(
+    public UUID insert(
             String businessKey,
             PurchaseRequestStatus status,
             String title
     ) {
+        UUID id = UUID.randomUUID();
         String sql = """
                 INSERT INTO purchase_request
                     (id, business_key, status, title)
@@ -28,11 +32,37 @@ public class PurchaseRequestJdbcRepository {
 
         jdbcTemplate.update(
                 sql,
-                UUID.randomUUID(),
+                id,
                 businessKey,
                 status.name(),
                 title
         );
+
+        return id;
+    }
+
+    public Optional<PurchaseRequest> findById(UUID id) {
+        String sql = """
+                SELECT id, business_key, status, title
+                FROM purchase_request
+                WHERE id = ?
+                """;
+
+        try {
+            PurchaseRequest request = jdbcTemplate.queryForObject(
+                    sql,
+                    (rs, rowNum) -> new PurchaseRequest(
+                            UUID.fromString(rs.getString("id")),
+                            rs.getString("business_key"),
+                            rs.getString("status"),
+                            rs.getString("title")
+                    ),
+                    id
+            );
+            return Optional.ofNullable(request);
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
+        }
     }
 
     public int countByBusinessKey(String businessKey) {

@@ -2,10 +2,14 @@ package com.example.purchase.handler;
 
 import com.example.purchase.client.PurchaseRequestJdbcRepository;
 import com.example.purchase.domain.DuplicatePurchaseRequest;
+import com.example.purchase.domain.PurchaseRequest;
+import com.example.purchase.domain.PurchaseRequestNotFoundException;
 import com.example.purchase.domain.PurchaseRequestStatus;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.UUID;
 
 @Service
 public class PurchaseRequestRegistrationService {
@@ -38,6 +42,20 @@ public class PurchaseRequestRegistrationService {
     }
 
     @Transactional
+    public PurchaseRequest register(String businessKey, String title) {
+        if (repository.countByBusinessKey(businessKey) > 0) {
+            throw new DuplicatePurchaseRequest(businessKey);
+        }
+
+        try {
+            UUID id = repository.insert(businessKey, PurchaseRequestStatus.DRAFT, title);
+            return new PurchaseRequest(id, businessKey, PurchaseRequestStatus.DRAFT.name(), title);
+        } catch (DataIntegrityViolationException exception) {
+            throw new DuplicatePurchaseRequest(businessKey);
+        }
+    }
+
+    @Transactional
     public void register(
             String businessKey,
             PurchaseRequestStatus status,
@@ -52,5 +70,11 @@ public class PurchaseRequestRegistrationService {
         } catch (DataIntegrityViolationException exception) {
             throw new DuplicatePurchaseRequest(businessKey);
         }
+    }
+
+    @Transactional(readOnly = true)
+    public PurchaseRequest getById(UUID id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new PurchaseRequestNotFoundException("Request with id " + id + " not found"));
     }
 }

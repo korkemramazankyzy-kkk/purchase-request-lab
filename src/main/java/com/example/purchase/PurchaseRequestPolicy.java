@@ -1,5 +1,7 @@
 package com.example.purchase;
 
+import com.example.purchase.domain.PurchaseRequestId;
+
 import static com.example.purchase.PurchaseRequestStatus.*;
 
 /**
