@@ -1,7 +1,8 @@
+
 package com.example.purchase.client;
 
+import com.example.purchase.PurchaseRequestStatus;
 import com.example.purchase.domain.PurchaseRequest;
-import com.example.purchase.domain.PurchaseRequestStatus;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -24,6 +25,7 @@ public class PurchaseRequestJdbcRepository {
             String title
     ) {
         UUID id = UUID.randomUUID();
+
         String sql = """
                 INSERT INTO purchase_request
                     (id, business_key, status, title)
@@ -59,8 +61,10 @@ public class PurchaseRequestJdbcRepository {
                     ),
                     id
             );
+
             return Optional.ofNullable(request);
-        } catch (EmptyResultDataAccessException e) {
+
+        } catch (EmptyResultDataAccessException exception) {
             return Optional.empty();
         }
     }
@@ -79,5 +83,19 @@ public class PurchaseRequestJdbcRepository {
         );
 
         return count == null ? 0 : count;
+    }
+
+    public int updateStatus(UUID id, PurchaseRequestStatus status) {
+        String sql = """
+                UPDATE purchase_request
+                SET status = ?
+                WHERE id = ?
+                """;
+
+        return jdbcTemplate.update(
+                sql,
+                status.name(),
+                id
+        );
     }
 }

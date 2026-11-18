@@ -14,12 +14,13 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/purchase-requests")
-public class PurchaseRequestController {
+public class        PurchaseRequestController {
 
     private final PurchaseRequestRegistrationService registrationService;
 
     public PurchaseRequestController(
-            PurchaseRequestRegistrationService registrationService) {
+            PurchaseRequestRegistrationService registrationService
+    ) {
         this.registrationService = registrationService;
     }
 
@@ -33,7 +34,8 @@ public class PurchaseRequestController {
     public ResponseEntity<PurchaseRequestResponseDto> create(
             @Valid @RequestBody PurchaseRequestCreateDto dto,
             @RequestHeader(value = "X-Correlation-Id", required = false)
-            String correlationId) {
+            String correlationId
+    ) {
 
         var created = registrationService.register(
                 dto.businessKey(),
@@ -67,7 +69,8 @@ public class PurchaseRequestController {
     public ResponseEntity<PurchaseRequestResponseDto> getById(
             @PathVariable String id,
             @RequestHeader(value = "X-Correlation-Id", required = false)
-            String correlationId) {
+            String correlationId
+    ) {
 
         UUID uuid;
 
@@ -91,10 +94,39 @@ public class PurchaseRequestController {
                 .body(response);
     }
 
+    @PostMapping("/{id}/approve")
+    @Operation(summary = "Approve purchase request")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Approved"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "403", description = "Forbidden"),
+            @ApiResponse(responseCode = "404", description = "Not Found")
+    })
+    public ResponseEntity<PurchaseRequestResponseDto> approve(
+            @PathVariable UUID id,
+            @RequestHeader(value = "X-Correlation-Id", required = false)
+            String correlationId
+    ) {
+
+        var approved = registrationService.approve(id);
+
+        var response = new PurchaseRequestResponseDto(
+                approved.id(),
+                approved.businessKey(),
+                approved.status(),
+                approved.title()
+        );
+
+        return ResponseEntity.ok()
+                .header("X-Correlation-Id", getCorrelationId(correlationId))
+                .body(response);
+    }
+
     private String getCorrelationId(String correlationId) {
         if (correlationId == null || correlationId.isBlank()) {
             return UUID.randomUUID().toString();
         }
+
         return correlationId;
     }
 }

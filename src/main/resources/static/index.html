@@ -1,0 +1,58 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Purchase Request Login</title>
+</head>
+<body>
+<h1>Purchase Request</h1>
+<h2>Login</h2>
+
+<form id="loginForm">
+    <input id="username" type="text" placeholder="Username" required>
+    <input id="password" type="password" placeholder="Password" required>
+    <button type="submit">Login</button>
+</form>
+
+<p id="message"></p>
+<div id="userInfo"></div>
+
+<script>
+    let accessToken = null;
+
+    document.getElementById("loginForm").addEventListener("submit", async function(event) {
+        event.preventDefault();
+
+        const response = await fetch("/api/v1/auth/login", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({
+                username: document.getElementById("username").value,
+                password: document.getElementById("password").value
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            document.getElementById("message").textContent = data.message;
+            return;
+        }
+
+        accessToken = data.accessToken;
+
+        const meResponse = await fetch("/api/me", {
+            headers: {"Authorization": "Bearer " + accessToken}
+        });
+
+        const me = await meResponse.json();
+
+        document.getElementById("message").textContent = "Login successful";
+        document.getElementById("userInfo").textContent =
+            "Username: " + me.username + " | Roles: " + me.authorities;
+    });
+</script>
+</body>
+</html>

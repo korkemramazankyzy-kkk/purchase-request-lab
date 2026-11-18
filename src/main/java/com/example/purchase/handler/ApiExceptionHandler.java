@@ -3,7 +3,9 @@ package com.example.purchase.handler;
 
 import com.example.purchase.domain.DuplicatePurchaseRequest;
 import com.example.purchase.domain.PurchaseRequestNotFoundException;
+
 import jakarta.servlet.http.HttpServletRequest;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -11,6 +13,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.UUID;
 
@@ -121,6 +124,32 @@ public class ApiExceptionHandler {
                 HttpStatus.NOT_FOUND,
                 "NOT_FOUND",
                 exception.getMessage(),
+                request
+        );
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<ErrorResponse> handleResponseStatus(
+            ResponseStatusException exception,
+            HttpServletRequest request
+    ) {
+        HttpStatus status = HttpStatus.valueOf(
+                exception.getStatusCode().value()
+        );
+
+        if (status == HttpStatus.UNAUTHORIZED) {
+            return buildResponse(
+                    status,
+                    "UNAUTHENTICATED",
+                    "bad username or password",
+                    request
+            );
+        }
+
+        return buildResponse(
+                status,
+                "INTERNAL",
+                "unexpected error",
                 request
         );
     }

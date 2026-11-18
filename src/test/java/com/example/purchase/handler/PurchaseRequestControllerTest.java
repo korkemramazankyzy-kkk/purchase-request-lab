@@ -1,18 +1,19 @@
 
 package com.example.purchase.handler;
 
+import com.example.purchase.config.Application;
 import com.example.purchase.domain.DuplicatePurchaseRequest;
 import com.example.purchase.domain.PurchaseRequest;
 import com.example.purchase.domain.PurchaseRequestNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-import com.example.purchase.config.Application;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.UUID;
 
@@ -21,8 +22,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(PurchaseRequestController.class)
+@AutoConfigureMockMvc(addFilters = false)
 @ContextConfiguration(classes = Application.class)
-@Import(ApiExceptionHandler.class)class PurchaseRequestControllerTest {
+@Import(ApiExceptionHandler.class)
+class PurchaseRequestControllerTest {
 
     @Autowired
     private MockMvc mockMvc;

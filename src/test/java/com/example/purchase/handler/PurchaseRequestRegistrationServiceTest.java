@@ -3,7 +3,7 @@ package com.example.purchase.handler;
 import com.example.purchase.client.PurchaseRequestJdbcRepository;
 import com.example.purchase.config.Application;
 import com.example.purchase.domain.DuplicatePurchaseRequest;
-import com.example.purchase.domain.PurchaseRequestStatus;
+import com.example.purchase.PurchaseRequestStatus;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
